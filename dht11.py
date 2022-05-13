@@ -18,7 +18,7 @@ GPIO.setwarnings(False)
 lcd = CharLCD(numbering_mode=GPIO.BOARD, cols=16, rows=2, pin_rs=37, pin_e=35, pins_data=[33, 31, 29, 23])
 
 # Set up the DHT11 sensor and pin
-gpio = 4
+gpio = 24
 dht11 = Adafruit_DHT.DHT11
 
 while True:
@@ -31,17 +31,13 @@ while True:
     with open(f"{csvfile_name}", 'a') as f:
         f.write("{},{},{}\n".format(timestamp, temperature, humidity))
 
-# # # Output to an LCD
-# # # https://www.circuitbasics.com/how-to-set-up-the-dht11-humidity-sensor-on-the-raspberry-pi/
-# # # Connect (D4,D5, D6, D7) to pins (33, 31, 29, 23)
-# # # Connect Rs e Rw to pins (37, 35)
-# # # Connect Ground to pin 39 and VCc to pin 2 (5V)
-# #     lcd.cursor_pos = (0, 0)
-# # # #    lcd.write_string('Temp: %d C' % temperature)
-# #     lcd.write_string('Temp: {0:0.1f} C'.format(temperature))
-# #     lcd.cursor_pos = (1, 0)
-# #     # lcd.write_string('Humidity: %d %%' % humidity)
-# #     lcd.write_string('Humidity: {0:0.1f} %'.format(humidity))
+# Output to an LCD
+# https://www.circuitbasics.com/how-to-set-up-the-dht11-humidity-sensor-on-the-raspberry-pi/
+# Connect (D4,D5, D6, D7) to pins (33, 31, 29, 23), Rs e Rw to pins (37, 35), Ground to pin 39 and VCc to pin 2 (5V)
+    lcd.cursor_pos = (0, 0)
+    lcd.write_string('Temp: {0:0.1f} C'.format(temperature))
+    lcd.cursor_pos = (1, 0)
+    lcd.write_string('Humidity: {0:0.1f} %'.format(humidity))
 
 # Output to an SSH terminal
     print('Datetime: {0}, Temp: {1:0.1f} C, Humidity: {2:0.1f} %'.format(timestamp, temperature, humidity))
