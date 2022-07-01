@@ -1,6 +1,4 @@
 
-
-
 try:
     import os
     import sys
@@ -79,11 +77,14 @@ class MyDb(object):
 
 
 def main():
-    global counter, interval, sampling_rate
-    obj = MyDb()
+    global counter, sensorID, sampling_rate
+    if not sensorID:
+        sensorID='Unknown'
+    if not sampling_rate:
+        sampling_rate=600    obj = MyDb()
     threading.Timer(interval=sampling_rate, function=main).start()
     Timestamp, Temperature , Humidity = obj.sensor_value()
-    obj.put(sensorID=sensorID, sample_id=sensorID +'_'+ str(counter), Timestamp = str(Timestamp), Temperature=str(Temperature), Humidity=str(Humidity))
+    obj.put(sensorID = sensorID,sample_id=sensorID +'_'+ str(counter), Timestamp = str(Timestamp), Temperature=str(Temperature), Humidity=str(Humidity))
     counter = counter + 1
     print("Uploaded Sample on Cloud Ts: {}, Temp:{}, Hum:{} ".format(Timestamp,Temperature, Humidity))
 
@@ -92,7 +93,7 @@ if __name__ == "__main__":
     global counter
     counter = 0
     global sampling_rate
-    sampling_rate = int(input('Define the sampling rate:  '))
+    sampling_rate = int(input('Define the sampling rate:  ') or '600')
     global sensorID
     sensorID = input('Define the sensor ID:  ')
     main()
