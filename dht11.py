@@ -41,5 +41,5 @@ while True:
 
 # Output to an SSH terminal
     print('Datetime: {0}, Temp: {1:0.1f} C, Humidity: {2:0.1f} %'.format(timestamp, temperature, humidity))
-    sleep(2)
+    sleep(30)
 #    lcd.clear() # Clear display
