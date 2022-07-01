@@ -80,8 +80,7 @@ def main():
     global counter, sensorID, sampling_rate
     if not sensorID:
         sensorID='Unknown'
-    if not sampling_rate:
-        sampling_rate=600    obj = MyDb()
+    obj = MyDb()
     threading.Timer(interval=sampling_rate, function=main).start()
     Timestamp, Temperature , Humidity = obj.sensor_value()
     obj.put(sensorID = sensorID,sample_id=sensorID +'_'+ str(counter), Timestamp = str(Timestamp), Temperature=str(Temperature), Humidity=str(Humidity))
