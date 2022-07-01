@@ -5,6 +5,7 @@ try:
     import datetime
     import time
     import boto3
+    import json
     import Adafruit_DHT
     import threading
     from datetime import datetime
@@ -33,7 +34,7 @@ class MyDb(object):
 
         return response
 
-    def put(self, sensorID='Unknown', sample_id='', Timestamp='', Temperature='', Humidity=''):
+    def put_db(self, sensorID='Unknown', sample_id='', Timestamp='', Temperature='', Humidity=''):
         self.table.put_item(
             Item={
 		'sensorID':sensorID,
@@ -43,7 +44,23 @@ class MyDb(object):
                 'Humidity' :Humidity
             }
         )
-
+        
+    # publish mqtt message to AWS IoT
+    def publish_mqtt(self, topic='dht/abc', sensorID='Unknown', sample_id='', Timestamp='', Temperature='', Humidity=''):
+        client = boto3.client('iot-data')
+        response = client.publish(
+            topic=topic,
+            qos=1,
+            payload=json.dumps({
+                'sensorID':sensorID,
+                'sample_id':sample_id,
+                'Timestamp':Timestamp,
+                'Temperature':Temperature,
+                'Humidity' :Humidity
+            })
+        )
+        return response
+    
     def delete(self,sample_id=''):
         self.table.delete_item(
             Key={
@@ -83,16 +100,25 @@ def main():
     obj = MyDb()
     threading.Timer(interval=sampling_rate, function=main).start()
     Timestamp, Temperature , Humidity = obj.sensor_value()
-    obj.put(sensorID = sensorID,sample_id=sensorID +'_'+ str(counter), Timestamp = str(Timestamp), Temperature=str(Temperature), Humidity=str(Humidity))
+    # Put data into DynamoDB
+    obj.put_db(sensorID = sensorID,sample_id=sensorID +'_'+ str(counter), Timestamp = str(Timestamp), Temperature=str(Temperature), Humidity=str(Humidity))
+    # Publish data to AWS IoT under the specified topic
+    obj.publish_mqtt(topic='dht/abc', sensorID=sensorID, sample_id=sensorID +'_'+ str(counter), Timestamp=str(Timestamp), Temperature=str(Temperature), Humidity=str(Humidity))
     counter = counter + 1
     print("Uploaded Sample on Cloud Ts: {}, Temp:{}, Hum:{} ".format(Timestamp,Temperature, Humidity))
 
 
 if __name__ == "__main__":
-    global counter
+    global counter, sensorID, sampling_rate, topic
     counter = 0
-    global sampling_rate
     sampling_rate = int(input('Define the sampling rate:  ') or '600')
-    global sensorID
     sensorID = input('Define the sensor ID:  ')
+    topic = input('Define the topic:  ')
     main()
+
+
+
+# MQTT to AWS
+
+# aws iot-data publish --topic "$mqtttopic" --cli-binary-format raw-in-base64-out --payload "{\"id\":'abc1',\"temperature\":$temperature,\"humidity\":$humidity}" --profile "$profile" --region "$region"
+# aws iot-data publish --topic "dht/asdfa" --cli-binary-format raw-in-base64-out --payload "{"id":'abc1',"temperature":40,"humidity":80}" --profile ivan --region us-east-1
