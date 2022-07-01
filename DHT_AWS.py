@@ -1,3 +1,6 @@
+
+
+
 try:
     import os
     import sys
@@ -23,29 +26,30 @@ class MyDb(object):
         self.client = boto3.client('dynamodb')
 
     @property
-    def get(self):
+    def get(self,sensorID=''):
         response = self.table.get_item(
             Key={
-                'sensorID':"1"
+                'sensorID':sensorID
             }
         )
 
         return response
 
-    def put(self, Sensor_Id='', Timestamp='', Temperature='', Humidity=''):
+    def put(self, sensorID='Unknown', sample_id='', Timestamp='', Temperature='', Humidity=''):
         self.table.put_item(
             Item={
-                'sensorID':Sensor_Id,
+		'sensorID':sensorID,
+                'sample_id':sample_id,
                 'Timestamp':Timestamp,
                 'Temperature':Temperature,
                 'Humidity' :Humidity
             }
         )
 
-    def delete(self,Sensor_Id=''):
+    def delete(self,sample_id=''):
         self.table.delete_item(
             Key={
-                'sensorID': Sensor_Id
+                'sample_id': sample_id
             }
         )
 
@@ -61,7 +65,7 @@ class MyDb(object):
         time = datetime.now()
         timestamp = time.strftime("%d/%m/%Y %H:%M:%S")
 
-        gpio = 4
+        gpio = 24
         dht11 = Adafruit_DHT.DHT11
 
         humidity, temperature = Adafruit_DHT.read_retry(dht11, gpio)
@@ -75,11 +79,11 @@ class MyDb(object):
 
 
 def main():
-    global counter
-    threading.Timer(interval=10, function=main).start()
+    global counter, interval, sampling_rate
     obj = MyDb()
+    threading.Timer(interval=sampling_rate, function=main).start()
     Timestamp, Temperature , Humidity = obj.sensor_value()
-    obj.put(Sensor_Id=str(counter), Timestamp = str(Timestamp), Temperature=str(Temperature), Humidity=str(Humidity))
+    obj.put(sensorID=sensorID, sample_id=sensorID +'_'+ str(counter), Timestamp = str(Timestamp), Temperature=str(Temperature), Humidity=str(Humidity))
     counter = counter + 1
     print("Uploaded Sample on Cloud Ts: {}, Temp:{}, Hum:{} ".format(Timestamp,Temperature, Humidity))
 
@@ -87,4 +91,8 @@ def main():
 if __name__ == "__main__":
     global counter
     counter = 0
+    global sampling_rate
+    sampling_rate = int(input('Define the sampling rate:  '))
+    global sensorID
+    sensorID = input('Define the sensor ID:  ')
     main()
