@@ -85,11 +85,11 @@ class MyDb(object):
 
         humidity, temperature = Adafruit_DHT.read_retry(dht11, gpio)
 
-        if humidity is not None and temperature is not None:
-            print('Datetime: {0}, Temp: {1:0.1f} C, Humidity: {2:0.1f} %'.format(timestamp, temperature, humidity))
-            # print('Temp={0:0.1f}*C  Humidity={1:0.1f}%'.format(temperature, humidity))
-        else:
-            print('Failed to get reading. Try again!')
+        # if humidity is not None and temperature is not None:
+        #     print('Datetime: {0}, Temp: {1:0.1f} C, Humidity: {2:0.1f} %'.format(timestamp, temperature, humidity))
+        #     # print('Temp={0:0.1f}*C  Humidity={1:0.1f}%'.format(temperature, humidity))
+        # else:
+        #     print('Failed to get reading. Try again!')
         return timestamp, temperature, humidity
 
 
@@ -104,8 +104,10 @@ def main():
     obj.put_db(sensorID = sensorID,sample_id=sensorID +'_'+ str(counter), Timestamp = str(Timestamp), Temperature=str(Temperature), Humidity=str(Humidity))
     # Publish data to AWS IoT under the specified topic
     obj.publish_mqtt(topic='dht/abc', sensorID=sensorID, sample_id=sensorID +'_'+ str(counter), Timestamp=str(Timestamp), Temperature=str(Temperature), Humidity=str(Humidity))
+    # Put data into DynamoDB
+    obj.put_db(sensorID=sensorID, sample_id=sensorID +'_'+ str(counter), Timestamp=str(Timestamp), Temperature=str(Temperature), Humidity=str(Humidity))
     counter = counter + 1
-    print("Uploaded Sample on Cloud Ts: {}, Temp:{}, Hum:{} ".format(Timestamp,Temperature, Humidity))
+    # print("Uploaded Sample on Cloud Ts: {}, Temp:{}, Hum:{} ".format(Timestamp,Temperature, Humidity))
 
 
 if __name__ == "__main__":
